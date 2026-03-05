@@ -892,7 +892,7 @@
 <body>
     <button class="theme-toggle" id="themeToggle">🌙 Тёмная тема</button>
 
-    <!-- Панели настроек (остаются как есть) -->
+    <!-- Панели настроек -->
     <div class="settings-panel" id="settingsPanel">
         <button class="settings-close" id="settingsClose">&times;</button>
         <h2>⚙️ Настройки</h2>
@@ -1206,7 +1206,7 @@
             HOURLY: 'krugle_hourly',
             USER_SETTINGS: 'krugle_user_settings_',
             MAINTENANCE: 'maintenance_mode',
-            PRIVACY_ACCEPTED: 'privacy_accepted' // для запоминания согласия
+            PRIVACY_ACCEPTED: 'privacy_accepted'
         };
 
         if (!localStorage.getItem(STORAGE_KEYS.USERS)) localStorage.setItem(STORAGE_KEYS.USERS, '{}');
@@ -1455,9 +1455,26 @@
                 if (localStorage.getItem(STORAGE_KEYS.MAINTENANCE) === 'true' && !ADMIN_NAMES.includes(name)) {
                     alert('🔧 Сайт на обслуживании'); return;
                 }
-                localStorage.setItem('krugle_user', name);
-                if (ADMIN_NAMES.includes(name)) showAdmin(name); else showSearch(name);
-            } else alert('Введите имя');
+                // Проверка пароля для имени KacERORga
+                if (name === 'KacERORga') {
+                    const password = prompt('Введите пароль для входа в админку:');
+                    if (password === '6369') {
+                        localStorage.setItem('krugle_user', name);
+                        showAdmin(name);
+                    } else {
+                        alert('Неверный пароль!');
+                    }
+                } else {
+                    localStorage.setItem('krugle_user', name);
+                    if (ADMIN_NAMES.includes(name)) {
+                        showAdmin(name);
+                    } else {
+                        showSearch(name);
+                    }
+                }
+            } else {
+                alert('Введите имя');
+            }
         });
         usernameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enterBtn.click(); });
 
