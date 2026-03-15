@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kolocrug — соцсеть колобков</title>
     <style>
-        /* Все стили без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -149,6 +148,11 @@
             cursor: pointer;
             margin-top: 20px;
         }
+        .login-error {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 15px;
+        }
 
         /* Основной контент */
         .main-content { display: none; }
@@ -166,6 +170,12 @@
             color: white;
         }
 
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
         .kolobok {
             width: 50px;
             height: 50px;
@@ -175,6 +185,11 @@
             align-items: center;
             justify-content: center;
             font-size: 1.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .kolobok:hover {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .kolobok-small {
@@ -216,7 +231,7 @@
             background: rgba(255,255,255,0.3);
         }
 
-        /* ===== АДМИН-ПАНЕЛЬ ===== */
+        /* Админ-панель */
         .admin-panel {
             background: rgba(0,0,0,0.3);
             backdrop-filter: blur(20px);
@@ -271,7 +286,7 @@
             margin: 5px;
         }
 
-        /* ===== ФОРМА СОЗДАНИЯ ПОСТА ===== */
+        /* Форма создания поста */
         .post-form {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(20px);
@@ -294,7 +309,6 @@
             color: rgba(255,255,255,0.6);
         }
         
-        /* Медиа-загрузка */
         .media-upload {
             display: flex;
             gap: 15px;
@@ -337,6 +351,11 @@
             align-items: center;
             gap: 10px;
         }
+        .video-player {
+            width: 100%;
+            max-height: 400px;
+            border-radius: 30px;
+        }
         
         .post-form button {
             background: linear-gradient(135deg, #FFD700, #FFA500);
@@ -351,6 +370,73 @@
         .post-form button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255,215,0,0.3);
+        }
+
+        /* Выбор колобка */
+        .kolobok-selector {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 40, 0.95);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 60px;
+            padding: 30px;
+            z-index: 10000;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .kolobok-selector.active {
+            display: block;
+        }
+        .kolobok-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .kolobok-option {
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        .kolobok-option:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+        .kolobok-selector h3 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        .close-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
         }
 
         /* Посты */
@@ -380,7 +466,6 @@
         .post-author { font-weight: 600; display: flex; align-items: center; gap: 5px; }
         .post-time { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
         
-        /* Кнопка удаления */
         .delete-button {
             position: absolute;
             top: 20px;
@@ -403,7 +488,6 @@
             transform: scale(1.1);
         }
         
-        /* Репост метка */
         .repost-label {
             display: inline-block;
             background: rgba(29,161,242,0.2);
@@ -415,7 +499,6 @@
             color: #1DA1F2;
         }
         
-        /* Медиа в постах */
         .post-media {
             margin: 15px 0;
         }
@@ -579,9 +662,9 @@
         <div class="login-card">
             <h2>👋 Вход в Kolocrug</h2>
             <input type="text" id="usernameInput" placeholder="Ваш username">
-            <input type="password" id="passwordInput" placeholder="Пароль (для админов)">
+            <input type="password" id="passwordInput" placeholder="Пароль">
             <button onclick="handleLogin()">Войти</button>
-            <div id="loginError" style="color: #ff6b6b; text-align: center;"></div>
+            <div class="login-error" id="loginError"></div>
         </div>
     </div>
 
@@ -589,9 +672,12 @@
     <div class="main-content" id="mainContent">
         <div class="container">
             <div class="top-bar">
-                <div class="user-info" style="display: flex; align-items: center; gap: 15px;">
-                    <div class="kolobok">🍞</div>
-                    <div class="username" id="displayUsername"></div>
+                <div class="user-info">
+                    <div class="kolobok" id="userKolobok" onclick="openKolobokSelector()">🍞</div>
+                    <div>
+                        <div class="username" id="displayUsername"></div>
+                        <div id="adminBadge" class="admin-badge" style="display: none;">👑 Админ</div>
+                    </div>
                 </div>
                 <div style="display: flex; gap: 15px; align-items: center;">
                     <div class="time-info" id="timeInfo">⏰</div>
@@ -604,7 +690,7 @@
                 </div>
             </div>
 
-            <!-- АДМИН-ПАНЕЛЬ -->
+            <!-- Админ-панель -->
             <div class="admin-panel" id="adminPanel">
                 <h3>⚡ Админ-панель</h3>
                 
@@ -621,35 +707,33 @@
                 <div class="admin-section">
                     <h4>⚙️ Управление</h4>
                     <button class="admin-button" onclick="clearAllPosts()">🗑️ Удалить все посты</button>
+                    <button class="admin-button" onclick="reloadBannedWords()">🔄 Перезагрузить список слов</button>
+                    <div style="margin-top:10px; font-size:0.9rem;" id="bannedWordsCount"></div>
                 </div>
             </div>
 
-            <!-- ===== ФОРМА СОЗДАНИЯ ПОСТА ===== -->
+            <!-- Форма создания поста -->
             <div class="post-form">
                 <textarea id="postContent" placeholder="Что нового?" rows="3"></textarea>
                 
-                <!-- Кнопки загрузки медиа -->
                 <div class="media-upload">
                     <label class="media-button">
                         📷 Фото
                         <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="previewImage()">
                     </label>
                     <label class="media-button">
-                        🎥 Видео (ссылка)
-                        <input type="text" id="videoUrl" placeholder="https://youtu.be/..." style="display: none;">
+                        🎥 Видео
+                        <input type="file" id="videoUpload" accept="video/*" style="display: none;" onchange="previewVideo()">
                     </label>
-                    <button class="media-button" onclick="showVideoInput()">➕ Вставить ссылку</button>
                 </div>
 
-                <!-- Превью загруженных медиа -->
                 <div class="media-preview" id="mediaPreview"></div>
 
                 <button onclick="createPost()">Опубликовать</button>
             </div>
 
-            <!-- ДИНАМИЧЕСКИЙ КОНТЕНТ -->
+            <!-- Динамический контент -->
             <div id="dynamicContent">
-                <!-- Приветственное сообщение при первом входе -->
                 <div class="welcome-message">
                     <div class="kolobok-big">🍞</div>
                     <h2>Добро пожаловать в Kolocrug!</h2>
@@ -660,18 +744,190 @@
         </div>
     </div>
 
+    <!-- Выбор колобка -->
+    <div class="kolobok-selector" id="kolobokSelector">
+        <div class="close-selector" onclick="closeKolobokSelector()">✕</div>
+        <h3>🍞 Выбери своего колобка</h3>
+        <div class="kolobok-grid" id="kolobokGrid"></div>
+    </div>
+
     <script>
-        // ===== ФУНКЦИЯ ДЛЯ ПРАВИЛЬНЫХ ОКОНЧАНИЙ =====
-        function pluralLikes(count) {
-            if (count % 10 === 1 && count % 100 !== 11) return 'лайк';
-            if ([2,3,4].includes(count % 10) && ![12,13,14].includes(count % 100)) return 'лайка';
-            return 'лайков';
+        // ===== ЗАГРУЗКА ЗАПРЕЩЁННЫХ СЛОВ ИЗ ФАЙЛА =====
+        let BANNED_WORDS = [];
+
+        async function loadBannedWordsFromFile() {
+            try {
+                const response = await fetch('banned_words.txt');
+                const text = await response.text();
+                // Разбиваем по строкам, убираем пустые и обрезаем пробелы
+                BANNED_WORDS = text.split('\n')
+                    .map(line => line.trim().toLowerCase())
+                    .filter(word => word.length > 0 && !word.startsWith('//'));
+                
+                console.log(`Загружено ${BANNED_WORDS.length} запрещённых слов`);
+                updateBannedWordsCount();
+            } catch (error) {
+                console.log('Не удалось загрузить banned_words.txt, используется пустой список');
+                BANNED_WORDS = [];
+            }
         }
 
-        function pluralComments(count) {
-            if (count % 10 === 1 && count % 100 !== 11) return 'комментарий';
-            if ([2,3,4].includes(count % 10) && ![12,13,14].includes(count % 100)) return 'комментария';
-            return 'комментариев';
+        function updateBannedWordsCount() {
+            const el = document.getElementById('bannedWordsCount');
+            if (el) {
+                el.textContent = `🚫 Загружено слов: ${BANNED_WORDS.length}`;
+            }
+        }
+
+        function reloadBannedWords() {
+            loadBannedWordsFromFile();
+            alert('Список запрещённых слов перезагружен!');
+        }
+
+        function containsBannedWords(text) {
+            if (!text || BANNED_WORDS.length === 0) return false;
+            const lowerText = text.toLowerCase();
+            for (let word of BANNED_WORDS) {
+                if (lowerText.includes(word)) {
+                    console.log('Найдено запрещённое слово:', word);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // ===== ПОЛЬЗОВАТЕЛИ И ПАРОЛИ =====
+        const ADMIN_USERNAMES = ['BUBLEMERC', 'KacERORga'];
+        const ADMIN_PASSWORD = '6369';
+
+        function handleLogin() {
+            const username = document.getElementById('usernameInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            const errorDiv = document.getElementById('loginError');
+
+            if (!username || !password) {
+                errorDiv.textContent = 'Введите имя и пароль';
+                return;
+            }
+
+            // Проверка админов
+            if (ADMIN_USERNAMES.includes(username)) {
+                if (password !== ADMIN_PASSWORD) {
+                    errorDiv.textContent = 'Неверный пароль';
+                    return;
+                }
+                localStorage.setItem('isAdmin', 'true');
+            } else {
+                // Проверка обычных пользователей
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                
+                if (users[username]) {
+                    // Существующий пользователь
+                    if (password !== users[username].password) {
+                        errorDiv.textContent = 'Неверный пароль';
+                        return;
+                    }
+                } else {
+                    // Новый пользователь
+                    users[username] = {
+                        password: password,
+                        kolobok: '🍞',
+                        created: new Date().toISOString()
+                    };
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+                localStorage.setItem('isAdmin', 'false');
+            }
+
+            localStorage.setItem('username', username);
+            
+            // Загружаем колобка пользователя
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (users[username] && users[username].kolobok) {
+                document.getElementById('userKolobok').textContent = users[username].kolobok;
+            }
+
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('displayUsername').textContent = '@' + username;
+            
+            if (ADMIN_USERNAMES.includes(username)) {
+                document.getElementById('adminPanel').classList.add('visible');
+            }
+            
+            loadSubscriptions();
+            
+            if (posts.length === 0) {
+                showFeed();
+            } else {
+                showFeed();
+            }
+        }
+
+        // ===== КОЛОБКИ =====
+        function generateKolobokEmojis() {
+            const emojis = [
+                '🍞', '🥖', '🥨', '🥯', '🍩', '🍪', '🎂', '🧁', '🍰', '🥧',
+                '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+                '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+                '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
+                '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+                '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬',
+                '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗',
+                '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯',
+                '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
+                '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈',
+                '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾',
+                '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿',
+                '😾', '🙈', '🙉', '🙊', '🐵', '🐒', '🦍', '🦧', '🐶', '🐕',
+                '🦮', '🐩', '🐺', '🦊', '🦝', '🐱', '🐈', '🐈⬛', '🦁', '🐯',
+                '🐅', '🐆', '🐴', '🐎', '🦄', '🦓', '🦌', '🦬', '🐮', '🐂',
+                '🐃', '🐄', '🦏', '🦛', '🐷', '🐖', '🐗', '🐽', '🐏', '🐑',
+                '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦣', '🐭', '🐁', '🐀',
+                '🐹', '🐰', '🐇', '🐿️', '🦫', '🦔', '🦇', '🐻', '🐻‍❄️', '🐨',
+                '🐼', '🦥', '🦦', '🦨', '🦘', '🦡', '🐾', '🦃', '🐔', '🐓',
+                '🐣', '🐤', '🐥', '🐦', '🐧', '🕊️', '🦅', '🦆', '🦢', '🦉',
+                '🦤', '🦩', '🦚', '🦜', '🐸', '🐊', '🐢', '🦎', '🐍', '🐲',
+                '🐉', '🦕', '🦖', '🐳', '🐋', '🐬', '🦭', '🐟', '🐠', '🐡',
+                '🦈', '🐙', '🐚', '🪸', '🐌', '🦋', '🐛', '🐜', '🐝', '🪲',
+                '🐞', '🦗', '🪳', '🕷️', '🕸️', '🦂', '🦟', '🪰', '🪱', '🦠'
+            ];
+            return emojis;
+        }
+
+        function openKolobokSelector() {
+            const selector = document.getElementById('kolobokSelector');
+            const grid = document.getElementById('kolobokGrid');
+            const emojis = generateKolobokEmojis();
+            
+            grid.innerHTML = '';
+            emojis.forEach(emoji => {
+                const div = document.createElement('div');
+                div.className = 'kolobok-option';
+                div.textContent = emoji;
+                div.onclick = () => selectKolobok(emoji);
+                grid.appendChild(div);
+            });
+            
+            selector.classList.add('active');
+        }
+
+        function closeKolobokSelector() {
+            document.getElementById('kolobokSelector').classList.remove('active');
+        }
+
+        function selectKolobok(emoji) {
+            const username = localStorage.getItem('username');
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            
+            if (users[username]) {
+                users[username].kolobok = emoji;
+                localStorage.setItem('users', JSON.stringify(users));
+                document.getElementById('userKolobok').textContent = emoji;
+            }
+            
+            closeKolobokSelector();
+            showProfile(username);
         }
 
         // ===== ПОЛИТИКА =====
@@ -679,14 +935,7 @@
             document.getElementById('privacyPopup').classList.add('hidden');
         }
 
-        // ===== АДМИНЫ =====
-        const ADMIN_USERNAMES = ['BUBLEMERC', 'KacERORga'];
-        const ADMIN_PASSWORD = '6369';
-
-        // ===== ВЕРИФИКАЦИЯ =====
-        let verifiedUsers = new Set(['BUBLEMERC', 'KacERORga']);
-
-        // ===== ПОДПИСКИ (ИСПРАВЛЕНО - НЕЛЬЗЯ НА СЕБЯ) =====
+        // ===== ПОДПИСКИ =====
         let subscriptions = new Set();
 
         function loadSubscriptions() {
@@ -701,7 +950,6 @@
         function toggleSubscribe(username) {
             const currentUser = localStorage.getItem('username');
             
-            // Запрещаем подписку на самого себя
             if (username === currentUser) {
                 alert('Нельзя подписаться на самого себя');
                 return;
@@ -716,17 +964,12 @@
             refreshView();
         }
 
-        // ===== МАССИВ ПОСТОВ =====
+        // ===== ПОСТЫ =====
         let posts = [];
         let postsDisplayed = 20;
         let currentView = 'feed';
         let currentProfile = null;
 
-        // ===== ПЕРЕМЕННЫЕ ДЛЯ МЕДИА =====
-        let currentImage = null;
-        let currentVideo = null;
-
-        // ===== ЗАГРУЗКА ПОСТОВ ИЗ LOCALSTORAGE =====
         function loadPosts() {
             const saved = localStorage.getItem('posts');
             if (saved) {
@@ -740,20 +983,36 @@
             localStorage.setItem('posts', JSON.stringify(posts));
         }
 
-        // Загружаем посты при старте
         loadPosts();
 
-        // ===== ФУНКЦИИ ДЛЯ МЕДИА =====
+        // ===== МЕДИА =====
+        let currentImage = null;
+        let currentVideo = null;
+
         function previewImage() {
             const file = document.getElementById('imageUpload').files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     currentImage = e.target.result;
-                    const preview = document.getElementById('mediaPreview');
-                    preview.innerHTML = `
+                    document.getElementById('mediaPreview').innerHTML = `
                         <img src="${currentImage}" class="image-preview">
                         <button class="media-button" onclick="removeImage()">❌ Убрать</button>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewVideo() {
+            const file = document.getElementById('videoUpload').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentVideo = e.target.result;
+                    document.getElementById('mediaPreview').innerHTML = `
+                        <video src="${currentVideo}" class="video-player" controls></video>
+                        <button class="media-button" onclick="removeVideo()">❌ Убрать</button>
                     `;
                 };
                 reader.readAsDataURL(file);
@@ -766,30 +1025,90 @@
             document.getElementById('imageUpload').value = '';
         }
 
-        function showVideoInput() {
-            const url = prompt('Вставьте ссылку на видео (YouTube, Vimeo, Rutube):');
-            if (url) {
-                if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo') || url.includes('rutube')) {
-                    currentVideo = url;
-                    const preview = document.getElementById('mediaPreview');
-                    preview.innerHTML = `
-                        <div class="video-preview">
-                            🎥 Видео добавлено
-                            <button class="media-button" onclick="removeVideo()">❌ Убрать</button>
-                        </div>
-                    `;
-                } else {
-                    alert('Пожалуйста, вставьте ссылку на YouTube, Vimeo или Rutube');
-                }
-            }
-        }
-
         function removeVideo() {
             currentVideo = null;
             document.getElementById('mediaPreview').innerHTML = '';
+            document.getElementById('videoUpload').value = '';
         }
 
-        // ===== ФУНКЦИИ ОТОБРАЖЕНИЯ =====
+        // ===== СОЗДАНИЕ ПОСТА =====
+        function createPost() {
+            const content = document.getElementById('postContent').value.trim();
+            const username = localStorage.getItem('username');
+            
+            if (!username) {
+                alert('Сначала войдите в систему');
+                return;
+            }
+            
+            // Проверка на запрещённые слова
+            if (containsBannedWords(content)) {
+                alert('⚠️ Пост содержит запрещённые выражения и не может быть опубликован');
+                return;
+            }
+            
+            if (!content && !currentImage && !currentVideo) {
+                alert('Напишите что-нибудь или добавьте медиа!');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userKolobok = users[username]?.kolobok || '🍞';
+
+            const newPost = {
+                id: Date.now(),
+                author: username,
+                authorKolobok: userKolobok,
+                content: content || '',
+                image: currentImage,
+                video: currentVideo,
+                likes: {},
+                likedBy: [],
+                comments: [],
+                time: 'только что'
+            };
+
+            posts.unshift(newPost);
+            savePosts();
+            
+            document.getElementById('postContent').value = '';
+            document.getElementById('mediaPreview').innerHTML = '';
+            currentImage = null;
+            currentVideo = null;
+            
+            showFeed();
+        }
+
+        // ===== ЛАЙКИ =====
+        function toggleLike(postId) {
+            const post = posts.find(p => p.id == postId);
+            const username = localStorage.getItem('username');
+            
+            if (post && username) {
+                if (!post.likes) post.likes = {};
+                
+                if (post.likes[username]) {
+                    delete post.likes[username];
+                } else {
+                    post.likes[username] = true;
+                }
+                
+                savePosts();
+                refreshView();
+            }
+        }
+
+        function getLikesCount(post) {
+            if (!post.likes) return 0;
+            return Object.keys(post.likes).length;
+        }
+
+        function userLiked(post) {
+            const username = localStorage.getItem('username');
+            return post.likes && post.likes[username];
+        }
+
+        // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
         function refreshView() {
             if (currentView === 'feed') showFeed();
             else if (currentView === 'subscriptions') showSubscriptions();
@@ -835,13 +1154,12 @@
 
             let html = '<div class="feed">';
             subPosts.slice(0, postsDisplayed).forEach(post => {
-                const verified = verifiedUsers.has(post.author) ? '<span class="verified-badge">✓</span>' : '';
                 html += `
                     <div class="post-card">
                         <div class="post-header" onclick="showProfile('${post.author}')">
-                            <div class="kolobok-small">🍞</div>
+                            <div class="kolobok-small">${post.authorKolobok || '🍞'}</div>
                             <div>
-                                <div class="post-author">@${post.author} ${verified}</div>
+                                <div class="post-author">@${post.author}</div>
                                 <div class="post-time">${post.time}</div>
                             </div>
                         </div>
@@ -858,13 +1176,16 @@
             currentProfile = username;
             
             const userPosts = posts.filter(p => p.author === username);
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userKolobok = users[username]?.kolobok || '🍞';
             
             let html = `
                 <div class="profile-header">
-                    <div class="profile-avatar">🍞</div>
+                    <div class="profile-avatar">${userKolobok}</div>
                     <div>
-                        <h2>@${username} ${verifiedUsers.has(username) ? '<span class="verified-badge">✓</span>' : ''}</h2>
+                        <h2>@${username}</h2>
                         <p>Постов: ${userPosts.length}</p>
+                        <p style="margin-top: 10px;">Колобок: ${userKolobok}</p>
                     </div>
                 </div>
                 <div class="feed">
@@ -887,56 +1208,39 @@
             const username = localStorage.getItem('username');
 
             posts.slice(0, postsDisplayed).forEach(post => {
-                const verified = verifiedUsers.has(post.author) ? '<span class="verified-badge">✓</span>' : '';
+                const likesCount = getLikesCount(post);
+                const liked = userLiked(post);
+                const commentsText = `${post.comments.length} комментариев`;
                 
-                const likesText = `${post.likes} ${pluralLikes(post.likes)}`;
-                const commentsText = `${post.comments.length} ${pluralComments(post.comments.length)}`;
-                
-                // Генерируем HTML для медиа, если есть
                 let mediaHtml = '';
                 if (post.image) {
                     mediaHtml += `<div class="post-media"><img src="${post.image}" class="post-image" onclick="window.open('${post.image}')"></div>`;
                 }
                 if (post.video) {
-                    let videoUrl = post.video;
-                    if (videoUrl.includes('youtu.be')) {
-                        const videoId = videoUrl.split('/').pop();
-                        videoUrl = `https://www.youtube.com/embed/${videoId}`;
-                    } else if (videoUrl.includes('youtube.com/watch')) {
-                        const videoId = new URL(videoUrl).searchParams.get('v');
-                        videoUrl = `https://www.youtube.com/embed/${videoId}`;
-                    } else if (videoUrl.includes('vimeo.com')) {
-                        const videoId = videoUrl.split('/').pop();
-                        videoUrl = `https://player.vimeo.com/video/${videoId}`;
-                    }
-                    mediaHtml += `<div class="post-media"><iframe src="${videoUrl}" class="post-video" allowfullscreen></iframe></div>`;
+                    mediaHtml += `<div class="post-media"><video src="${post.video}" class="video-player" controls></video></div>`;
                 }
                 
-                // Метка репоста
                 const repostLabel = post.isRepost ? 
                     `<div class="repost-label">🔄 репостнул(а) @${post.originalAuthor}</div>` : '';
                 
-                // Кнопка репоста (только на чужих постах)
                 const repostButton = (post.author !== username) ? 
                     `<span class="repost-button" onclick="repost(${post.id})">🔄 Репост</span>` : '';
                 
-                // Кнопка подписки (НЕ показываем на своих постах)
                 const subscribeButton = (post.author !== username) ? 
                     `<span class="subscribe-button" onclick="toggleSubscribe('${post.author}')">
                         ${subscriptions.has(post.author) ? '✓ Подписан' : '+ Подписаться'}
                     </span>` : '';
                 
-                // Кнопка удаления (только для своих постов)
-                const deleteButton = (post.author === username) ? 
+                const deleteButton = (post.author === username || ADMIN_USERNAMES.includes(username)) ? 
                     `<div class="delete-button" onclick="deletePost(${post.id})">✕</div>` : '';
 
                 html += `
                     <div class="post-card">
                         ${deleteButton}
                         <div class="post-header" onclick="showProfile('${post.author}')">
-                            <div class="kolobok-small">🍞</div>
+                            <div class="kolobok-small">${post.authorKolobok || '🍞'}</div>
                             <div>
-                                <div class="post-author">@${post.author} ${verified}</div>
+                                <div class="post-author">@${post.author}</div>
                                 <div class="post-time">${post.time}</div>
                             </div>
                         </div>
@@ -944,11 +1248,11 @@
                         <div class="post-content">${post.content}</div>
                         ${mediaHtml}
                         <div class="post-stats">
-                            <span class="like-button ${post.liked ? 'liked' : ''}" onclick="toggleLike(${post.id})">
-                                ❤️ ${likesText}
+                            <span class="like-button ${liked ? 'liked' : ''}" onclick="toggleLike(${post.id})">
+                                ❤️ ${likesCount}
                             </span>
                             <span class="comment-button" onclick="toggleComments(${post.id})">
-                                💬 ${commentsText}
+                                💬 ${post.comments.length}
                             </span>
                             ${subscribeButton}
                             ${repostButton}
@@ -976,11 +1280,15 @@
                     <div class="sidebar">
                         <div class="sidebar-card">
                             <h3>👥 Активные пользователи</h3>
-                            ${[...new Set(posts.map(p => p.author))].slice(0, 5).map(u => `
-                                <div style="margin: 10px 0; cursor: pointer;" onclick="showProfile('${u}')">
-                                    🍞 @${u}
-                                </div>
-                            `).join('')}
+                            ${[...new Set(posts.map(p => p.author))].slice(0, 5).map(u => {
+                                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                                const kolobok = users[u]?.kolobok || '🍞';
+                                return `
+                                    <div style="margin: 10px 0; cursor: pointer;" onclick="showProfile('${u}')">
+                                        ${kolobok} @${u}
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 </div>
@@ -994,21 +1302,6 @@
             document.getElementById('dynamicContent').innerHTML = html;
         }
 
-        // ===== ДЕЙСТВИЯ =====
-        function toggleLike(postId) {
-            const post = posts.find(p => p.id == postId);
-            if (post) {
-                if (post.liked) {
-                    post.likes--;
-                } else {
-                    post.likes++;
-                }
-                post.liked = !post.liked;
-                savePosts();
-                refreshView();
-            }
-        }
-
         function toggleComments(postId) {
             const div = document.getElementById(`comments-${postId}`);
             if (div) div.style.display = div.style.display === 'none' ? 'block' : 'none';
@@ -1017,9 +1310,14 @@
         function addComment(postId) {
             const input = document.getElementById(`comment-input-${postId}`);
             const text = input.value.trim();
-            const username = localStorage.getItem('username') || 'anonymous';
+            const username = localStorage.getItem('username');
             
             if (text) {
+                if (containsBannedWords(text)) {
+                    alert('⚠️ Комментарий содержит запрещённые выражения');
+                    return;
+                }
+                
                 const post = posts.find(p => p.id == postId);
                 post.comments.push({
                     author: username,
@@ -1031,7 +1329,6 @@
             }
         }
 
-        // ===== УДАЛЕНИЕ ПОСТА =====
         function deletePost(postId) {
             if (confirm('Удалить этот пост?')) {
                 posts = posts.filter(p => p.id != postId);
@@ -1040,7 +1337,6 @@
             }
         }
 
-        // ===== РЕПОСТ =====
         function repost(postId) {
             const originalPost = posts.find(p => p.id == postId);
             const username = localStorage.getItem('username');
@@ -1055,14 +1351,18 @@
                 return;
             }
 
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userKolobok = users[username]?.kolobok || '🍞';
+
             const repostPost = {
                 id: Date.now(),
                 author: username,
+                authorKolobok: userKolobok,
                 content: originalPost.content,
                 image: originalPost.image,
                 video: originalPost.video,
-                likes: 0,
-                liked: false,
+                likes: {},
+                likedBy: [],
                 comments: [],
                 time: 'только что',
                 isRepost: true,
@@ -1074,50 +1374,11 @@
             refreshView();
         }
 
-        // ===== СОЗДАНИЕ ПОСТА =====
-        function createPost() {
-            const content = document.getElementById('postContent').value.trim();
-            const username = localStorage.getItem('username');
-            
-            if (!username) {
-                alert('Сначала войдите в систему');
-                return;
-            }
-            
-            if (!content && !currentImage && !currentVideo) {
-                alert('Напишите что-нибудь или добавьте медиа!');
-                return;
-            }
-
-            const newPost = {
-                id: Date.now(),
-                author: username,
-                content: content || '',
-                image: currentImage,
-                video: currentVideo,
-                likes: 0,
-                liked: false,
-                comments: [],
-                time: 'только что'
-            };
-
-            posts.unshift(newPost);
-            savePosts();
-            
-            document.getElementById('postContent').value = '';
-            document.getElementById('mediaPreview').innerHTML = '';
-            currentImage = null;
-            currentVideo = null;
-            
-            showFeed();
-        }
-
         function loadMore() {
             postsDisplayed += 20;
             refreshView();
         }
 
-        // ===== АДМИН-ФУНКЦИИ =====
         function previewGradient(timeOfDay) {
             document.body.className = timeOfDay;
         }
@@ -1131,47 +1392,6 @@
             }
         }
 
-        // ===== ВХОД =====
-        function handleLogin() {
-            const username = document.getElementById('usernameInput').value.trim();
-            const password = document.getElementById('passwordInput').value.trim();
-            
-            if (!username) {
-                document.getElementById('loginError').textContent = 'Введите username';
-                return;
-            }
-
-            if (ADMIN_USERNAMES.includes(username)) {
-                if (password !== ADMIN_PASSWORD) {
-                    document.getElementById('loginError').textContent = 'Неверный пароль';
-                    return;
-                }
-                localStorage.setItem('isAdmin', 'true');
-            } else {
-                localStorage.setItem('isAdmin', 'false');
-            }
-
-            localStorage.setItem('username', username);
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-            document.getElementById('displayUsername').innerHTML = '@' + username + (verifiedUsers.has(username) ? '<span class="verified-badge">✓</span>' : '');
-            
-            const adminPanel = document.getElementById('adminPanel');
-            if (ADMIN_USERNAMES.includes(username)) {
-                adminPanel.classList.add('visible');
-            } else {
-                adminPanel.classList.remove('visible');
-            }
-            
-            loadSubscriptions();
-            
-            if (posts.length === 0) {
-                showFeed();
-            } else {
-                showFeed();
-            }
-        }
-
         function logout() {
             localStorage.removeItem('username');
             localStorage.removeItem('isAdmin');
@@ -1180,7 +1400,6 @@
             document.getElementById('adminPanel').classList.remove('visible');
         }
 
-        // ===== ВРЕМЯ =====
         function updateTime() {
             const hours = new Date().getHours();
             document.getElementById('timeInfo').textContent = hours + ':00';
@@ -1192,7 +1411,9 @@
         }
 
         // ===== ЗАПУСК =====
-        window.onload = function() {
+        window.onload = async function() {
+            await loadBannedWordsFromFile();
+            
             document.getElementById('privacyPopup').classList.remove('hidden');
             
             if (localStorage.getItem('username')) {
@@ -1203,6 +1424,11 @@
                 const username = localStorage.getItem('username');
                 if (ADMIN_USERNAMES.includes(username)) {
                     document.getElementById('adminPanel').classList.add('visible');
+                }
+                
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                if (users[username] && users[username].kolobok) {
+                    document.getElementById('userKolobok').textContent = users[username].kolobok;
                 }
                 
                 loadSubscriptions();
