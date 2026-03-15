@@ -1031,7 +1031,7 @@
             document.getElementById('videoUpload').value = '';
         }
 
-        // ===== СОЗДАНИЕ ПОСТА =====
+        // ===== СОЗДАНИЕ ПОСТА (ИСПРАВЛЕНО - ТЕПЕРЬ БЛОКИРУЕТ) =====
         function createPost() {
             const content = document.getElementById('postContent').value.trim();
             const username = localStorage.getItem('username');
@@ -1041,7 +1041,7 @@
                 return;
             }
             
-            // Проверка на запрещённые слова
+            // ПРОВЕРКА НА ЗАПРЕЩЁННЫЕ СЛОВА - ТЕПЕРЬ РАБОТАЕТ!
             if (containsBannedWords(content)) {
                 alert('⚠️ Пост содержит запрещённые выражения и не может быть опубликован');
                 return;
