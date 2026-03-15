@@ -722,8 +722,6 @@
                     <button class="admin-button" onclick="clearAllPosts()">🗑️ Удалить все посты</button>
                     <button class="admin-button" onclick="reloadBannedWords()">🔄 Перезагрузить список слов</button>
                     <div style="margin-top:10px; font-size:0.9rem;" id="bannedWordsCount"></div>
-                    <button class="admin-button" onclick="syncPosts()">🔄 Синхронизировать с облаком</button>
-                    <button class="admin-button" onclick="testSave()">🧪 Тест сохранения</button>
                 </div>
             </div>
 
@@ -759,9 +757,44 @@
     </div>
 
     <script>
-        // ===== НАСТРОЙКИ JSONBIN.IO =====
-        const BIN_ID = '67d6a2b68a456b79667f6186'; // НОВЫЙ РАБОЧИЙ БИН
-        const API_KEY = '$2a$10$zQVqXJqMqMqMqMqMqMqMqO';
+        // ===== ПРОСТОЕ ОБЛАЧНОЕ ХРАНИЛИЩЕ =====
+        // Используем бесплатный сервис для хранения постов
+        const API_URL = 'https://api.jsonstorage.net/v1/json/5a5e5a5e-5a5e-5a5e-5a5e-5a5e5a5e5a5e/posts';
+
+        async function loadPostsFromCloud() {
+            try {
+                document.getElementById('dynamicContent').innerHTML = '<div class="loading">Загрузка постов...</div>';
+                
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    posts = data.posts || [];
+                    console.log(`✅ Загружено ${posts.length} постов`);
+                } else {
+                    posts = [];
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                posts = [];
+            }
+            
+            if (currentView === 'feed') showFeed();
+        }
+
+        async function savePostsToCloud() {
+            try {
+                await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ posts: posts })
+                });
+                console.log('✅ Посты сохранены');
+            } catch (error) {
+                console.error('Ошибка сохранения:', error);
+            }
+        }
 
         // ===== ВЕРИФИЦИРОВАННЫЕ ПОЛЬЗОВАТЕЛИ =====
         let verifiedUsers = new Set(['BUBLEMERC', 'KacERORga']);
@@ -809,91 +842,6 @@
                 }
             }
             return false;
-        }
-
-        // ===== ТЕСТ СОХРАНЕНИЯ =====
-        async function testSave() {
-            console.log('Тест сохранения...');
-            const testPost = {
-                id: Date.now(),
-                author: 'test',
-                content: 'Тестовый пост',
-                likes: {},
-                comments: [],
-                time: 'только что'
-            };
-            
-            try {
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
-                    body: JSON.stringify({ posts: [testPost] })
-                });
-                
-                if (response.ok) {
-                    alert('✅ Тест сохранения прошёл успешно!');
-                    await loadPostsFromCloud();
-                } else {
-                    alert('❌ Ошибка сохранения. Код: ' + response.status);
-                }
-            } catch (e) {
-                alert('❌ Ошибка: ' + e.message);
-            }
-        }
-
-        // ===== ОБЛАЧНОЕ ХРАНИЛИЩЕ =====
-        let posts = [];
-        let postsDisplayed = 20;
-        let currentView = 'feed';
-        let currentProfile = null;
-
-        async function loadPostsFromCloud() {
-            try {
-                document.getElementById('dynamicContent').innerHTML = '<div class="loading">Загрузка постов...</div>';
-                
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: {
-                        'X-Master-Key': API_KEY
-                    }
-                });
-                const data = await response.json();
-                posts = data.record.posts || [];
-                console.log(`Загружено ${posts.length} постов из облака`);
-                
-                posts.sort((a, b) => b.id - a.id);
-                
-                if (currentView === 'feed') showFeed();
-                return posts;
-            } catch (error) {
-                console.error('Ошибка загрузки из облака:', error);
-                posts = [];
-                if (currentView === 'feed') showFeed();
-                return [];
-            }
-        }
-
-        async function savePostsToCloud() {
-            try {
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
-                    body: JSON.stringify({ posts: posts })
-                });
-                console.log('Посты сохранены в облако');
-            } catch (error) {
-                console.error('Ошибка сохранения в облако:', error);
-            }
-        }
-
-        function syncPosts() {
-            loadPostsFromCloud();
-            alert('Посты синхронизированы с облаком!');
         }
 
         // ===== ПОЛЬЗОВАТЕЛИ И ПАРОЛИ =====
@@ -1054,6 +1002,10 @@
             refreshView();
         }
 
+        let posts = [];
+        let postsDisplayed = 20;
+        let currentView = 'feed';
+        let currentProfile = null;
         let currentImage = null;
         let currentVideo = null;
 
