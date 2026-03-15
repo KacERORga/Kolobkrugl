@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kolocrug — соцсеть колобков</title>
     <style>
-        /* Все стили как в предыдущей версии */
         * {
             margin: 0;
             padding: 0;
@@ -67,7 +66,6 @@
             padding: 20px;
         }
 
-        /* Политика */
         .privacy-popup {
             position: fixed;
             top: 0;
@@ -102,7 +100,6 @@
             margin-top: 20px;
         }
 
-        /* Модалка входа */
         .login-modal {
             position: fixed;
             top: 0;
@@ -155,7 +152,6 @@
             margin-top: 15px;
         }
 
-        /* Основной контент */
         .main-content { display: none; }
 
         .top-bar {
@@ -234,7 +230,6 @@
             background: rgba(255,255,255,0.3);
         }
 
-        /* Админ-панель */
         .admin-panel {
             background: rgba(0,0,0,0.3);
             backdrop-filter: blur(20px);
@@ -289,7 +284,6 @@
             margin: 5px;
         }
 
-        /* Форма создания поста */
         .post-form {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(20px);
@@ -375,7 +369,6 @@
             box-shadow: 0 5px 15px rgba(255,215,0,0.3);
         }
 
-        /* Выбор колобка */
         .kolobok-selector {
             display: none;
             position: fixed;
@@ -442,7 +435,6 @@
             font-size: 1.5rem;
         }
 
-        /* Посты */
         .grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -661,7 +653,6 @@
             50% { transform: translateY(-20px); }
         }
 
-        /* Индикатор загрузки */
         .loading {
             text-align: center;
             padding: 50px;
@@ -674,7 +665,6 @@
         <h1>Seti.kolokrug</h1>
     </header>
 
-    <!-- Политика -->
     <div class="privacy-popup" id="privacyPopup">
         <div class="privacy-card">
             <h2>🍞 Политика конфиденциальности</h2>
@@ -683,7 +673,6 @@
         </div>
     </div>
 
-    <!-- Вход -->
     <div class="login-modal" id="loginModal">
         <div class="login-card">
             <h2>👋 Вход в Kolocrug</h2>
@@ -694,7 +683,6 @@
         </div>
     </div>
 
-    <!-- Основное -->
     <div class="main-content" id="mainContent">
         <div class="container">
             <div class="top-bar">
@@ -716,7 +704,6 @@
                 </div>
             </div>
 
-            <!-- Админ-панель -->
             <div class="admin-panel" id="adminPanel">
                 <h3>⚡ Админ-панель</h3>
                 
@@ -736,10 +723,10 @@
                     <button class="admin-button" onclick="reloadBannedWords()">🔄 Перезагрузить список слов</button>
                     <div style="margin-top:10px; font-size:0.9rem;" id="bannedWordsCount"></div>
                     <button class="admin-button" onclick="syncPosts()">🔄 Синхронизировать с облаком</button>
+                    <button class="admin-button" onclick="testSave()">🧪 Тест сохранения</button>
                 </div>
             </div>
 
-            <!-- Форма создания поста -->
             <div class="post-form">
                 <textarea id="postContent" placeholder="Что нового?" rows="3"></textarea>
                 
@@ -759,14 +746,12 @@
                 <button onclick="createPost()">Опубликовать</button>
             </div>
 
-            <!-- Динамический контент -->
             <div id="dynamicContent">
                 <div class="loading">Загрузка постов...</div>
             </div>
         </div>
     </div>
 
-    <!-- Выбор колобка -->
     <div class="kolobok-selector" id="kolobokSelector">
         <div class="close-selector" onclick="closeKolobokSelector()">✕</div>
         <h3>🍞 Выбери своего колобка</h3>
@@ -775,9 +760,9 @@
 
     <script>
         // ===== НАСТРОЙКИ JSONBIN.IO =====
-        const BIN_ID = '67d58f788a456b79667f43fa'; // ЭТО БЕСПЛАТНОЕ ХРАНИЛИЩЕ
-        const API_KEY = '$2a$10$zQVqXJqMqMqMqMqMqMqMqO'; // Публичный ключ для чтения
-        
+        const BIN_ID = '67d6a2b68a456b79667f6186'; // НОВЫЙ РАБОЧИЙ БИН
+        const API_KEY = '$2a$10$zQVqXJqMqMqMqMqMqMqMqO';
+
         // ===== ВЕРИФИЦИРОВАННЫЕ ПОЛЬЗОВАТЕЛИ =====
         let verifiedUsers = new Set(['BUBLEMERC', 'KacERORga']);
 
@@ -826,7 +811,40 @@
             return false;
         }
 
-        // ===== ОБЛАЧНОЕ ХРАНИЛИЩЕ (КАК В VK) =====
+        // ===== ТЕСТ СОХРАНЕНИЯ =====
+        async function testSave() {
+            console.log('Тест сохранения...');
+            const testPost = {
+                id: Date.now(),
+                author: 'test',
+                content: 'Тестовый пост',
+                likes: {},
+                comments: [],
+                time: 'только что'
+            };
+            
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify({ posts: [testPost] })
+                });
+                
+                if (response.ok) {
+                    alert('✅ Тест сохранения прошёл успешно!');
+                    await loadPostsFromCloud();
+                } else {
+                    alert('❌ Ошибка сохранения. Код: ' + response.status);
+                }
+            } catch (e) {
+                alert('❌ Ошибка: ' + e.message);
+            }
+        }
+
+        // ===== ОБЛАЧНОЕ ХРАНИЛИЩЕ =====
         let posts = [];
         let postsDisplayed = 20;
         let currentView = 'feed';
@@ -845,7 +863,6 @@
                 posts = data.record.posts || [];
                 console.log(`Загружено ${posts.length} постов из облака`);
                 
-                // Сортируем по дате (новые сверху)
                 posts.sort((a, b) => b.id - a.id);
                 
                 if (currentView === 'feed') showFeed();
@@ -936,7 +953,7 @@
             }
             
             loadSubscriptions();
-            loadPostsFromCloud(); // Загружаем посты из облака
+            loadPostsFromCloud();
         }
 
         // ===== КОЛОБКИ =====
@@ -1005,12 +1022,10 @@
             showProfile(username);
         }
 
-        // ===== ПОЛИТИКА =====
         function acceptPrivacy() {
             document.getElementById('privacyPopup').classList.add('hidden');
         }
 
-        // ===== ПОДПИСКИ =====
         let subscriptions = new Set();
 
         function loadSubscriptions() {
@@ -1039,7 +1054,6 @@
             refreshView();
         }
 
-        // ===== МЕДИА =====
         let currentImage = null;
         let currentVideo = null;
 
@@ -1085,7 +1099,6 @@
             document.getElementById('videoUpload').value = '';
         }
 
-        // ===== СОЗДАНИЕ ПОСТА =====
         async function createPost() {
             const content = document.getElementById('postContent').value.trim();
             const username = localStorage.getItem('username');
@@ -1121,7 +1134,7 @@
             };
 
             posts.unshift(newPost);
-            await savePostsToCloud(); // Сохраняем в облако
+            await savePostsToCloud();
             
             document.getElementById('postContent').value = '';
             document.getElementById('mediaPreview').innerHTML = '';
@@ -1131,7 +1144,6 @@
             showFeed();
         }
 
-        // ===== ЛАЙКИ =====
         async function toggleLike(postId) {
             const post = posts.find(p => p.id == postId);
             const username = localStorage.getItem('username');
@@ -1160,7 +1172,6 @@
             return post.likes && post.likes[username];
         }
 
-        // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
         function refreshView() {
             if (currentView === 'feed') showFeed();
             else if (currentView === 'subscriptions') showSubscriptions();
@@ -1467,7 +1478,6 @@
             else document.body.className = 'night';
         }
 
-        // ===== ЗАПУСК =====
         window.onload = async function() {
             await loadBannedWordsFromFile();
             
@@ -1491,7 +1501,7 @@
                 }
                 
                 loadSubscriptions();
-                await loadPostsFromCloud(); // Загружаем посты из облака
+                await loadPostsFromCloud();
             }
             
             updateTime();
