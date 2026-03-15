@@ -343,6 +343,10 @@
             border-radius: 60px;
             color: white;
             margin-bottom: 15px;
+            resize: vertical;
+        }
+        .post-form textarea::placeholder {
+            color: rgba(255,255,255,0.6);
         }
         .post-form button {
             background: rgba(255,215,0,0.3);
@@ -351,6 +355,10 @@
             padding: 12px 30px;
             border-radius: 60px;
             cursor: pointer;
+            font-weight: 500;
+        }
+        .post-form button:hover {
+            background: rgba(255,215,0,0.4);
         }
 
         .profile-header {
@@ -377,6 +385,7 @@
             padding: 15px 40px;
             border-radius: 60px;
             cursor: pointer;
+            font-weight: 500;
         }
 
         .logout-button {
@@ -386,6 +395,36 @@
             padding: 10px 20px;
             border-radius: 60px;
             cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Приветственное сообщение */
+        .welcome-message {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 60px;
+            margin: 30px 0;
+        }
+        .welcome-message h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .welcome-message p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        .welcome-message .kolobok-big {
+            font-size: 5rem;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
     </style>
 </head>
@@ -408,9 +447,12 @@
         <div class="login-card">
             <h2>👋 Вход в Kolocrug</h2>
             <input type="text" id="usernameInput" placeholder="Ваш username">
-            <input type="password" id="passwordInput" placeholder="Пароль">
+            <input type="password" id="passwordInput" placeholder="Пароль (для админов)">
             <button onclick="handleLogin()">Войти</button>
             <div id="loginError" style="color: #ff6b6b; text-align: center;"></div>
+            <p style="color: rgba(255,255,255,0.6); text-align: center; margin-top: 20px; font-size: 0.9rem;">
+                Новый пользователь? Просто введите имя — аккаунт создастся автоматически
+            </p>
         </div>
     </div>
 
@@ -433,7 +475,7 @@
                 </div>
             </div>
 
-            <!-- АДМИН-ПАНЕЛЬ -->
+            <!-- АДМИН-ПАНЕЛЬ (только для админов) -->
             <div class="admin-panel" id="adminPanel">
                 <h3>⚡ Админ-панель</h3>
                 
@@ -450,41 +492,23 @@
                 <div class="admin-section">
                     <h4>⚙️ Управление</h4>
                     <button class="admin-button" onclick="clearAllPosts()">🗑️ Удалить все посты</button>
+                    <button class="admin-button" onclick="showWelcomeMessage()">🏠 Показать приветствие</button>
                 </div>
             </div>
 
-            <div id="dynamicContent"></div>
+            <div id="dynamicContent">
+                <!-- Приветственное сообщение при первом входе -->
+                <div class="welcome-message">
+                    <div class="kolobok-big">🍞</div>
+                    <h2>Добро пожаловать в Kolocrug!</h2>
+                    <p>Пока здесь пусто — будьте первым, кто напишет пост!</p>
+                    <p style="font-size: 1rem;">Напишите что-нибудь в форме выше 👆</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // ===== ФУНКЦИЯ ДЛЯ ПРАВИЛЬНЫХ ПАДЕЖЕЙ =====
-        function getCorrectForm(topic, case_type) {
-            const forms = {
-                'фотография': { acc: 'фотографию', ins: 'фотографией', prep: 'фотографии' },
-                'путешествие': { acc: 'путешествие', ins: 'путешествием', prep: 'путешествии' },
-                'музыка': { acc: 'музыку', ins: 'музыкой', prep: 'музыке' },
-                'кино': { acc: 'кино', ins: 'кино', prep: 'кино' },
-                'книги': { acc: 'книги', ins: 'книгами', prep: 'книгах' },
-                'спорт': { acc: 'спорт', ins: 'спортом', prep: 'спорте' },
-                'еда': { acc: 'еду', ins: 'едой', prep: 'еде' },
-                'технологии': { acc: 'технологии', ins: 'технологиями', prep: 'технологиях' },
-                'искусство': { acc: 'искусство', ins: 'искусством', prep: 'искусстве' },
-                'наука': { acc: 'науку', ins: 'наукой', prep: 'науке' },
-                'йога': { acc: 'йогу', ins: 'йогой', prep: 'йоге' },
-                'психология': { acc: 'психологию', ins: 'психологией', prep: 'психологии' },
-                'бизнес': { acc: 'бизнес', ins: 'бизнесом', prep: 'бизнесе' },
-                'крипта': { acc: 'крипту', ins: 'криптой', prep: 'крипте' },
-                'нейросети': { acc: 'нейросети', ins: 'нейросетями', prep: 'нейросетях' },
-                'космос': { acc: 'космос', ins: 'космосом', prep: 'космосе' },
-                'авто': { acc: 'авто', ins: 'авто', prep: 'авто' },
-                'фитнес': { acc: 'фитнес', ins: 'фитнесом', prep: 'фитнесе' },
-                'рецепты': { acc: 'рецепты', ins: 'рецептами', prep: 'рецептах' },
-                'кафе': { acc: 'кафе', ins: 'кафе', prep: 'кафе' }
-            };
-            return forms[topic]?.[case_type] || topic;
-        }
-
         // ===== ФУНКЦИЯ ДЛЯ ПРАВИЛЬНЫХ ОКОНЧАНИЙ =====
         function pluralLikes(count) {
             if (count % 10 === 1 && count % 100 !== 11) return 'лайк';
@@ -509,20 +533,12 @@
             document.getElementById('privacyPopup').classList.add('hidden');
         }
 
-        // ===== АДМИНЫ (ТОЛЬКО ЭТИ ДВА) =====
+        // ===== АДМИНЫ =====
         const ADMIN_USERNAMES = ['BUBLEMERC', 'KacERORga'];
         const ADMIN_PASSWORD = '6369';
 
-        // ===== РЕАЛЬНЫЕ ПОЛЬЗОВАТЕЛИ (админов тут НЕТ) =====
-        const realUsers = [
-            'alex_foto', 'misha_travel', 'lena_music', 'dima_kino', 'olga_books', 
-            'anton_sport', 'sveta_food', 'pavel_tech', 'nina_art', 'igor_science',
-            'katya_yoga', 'vova_psy', 'tanya_biz', 'sasha_crypto', 'rita_ai',
-            'danya_space', 'liza_auto', 'maks_fitness', 'ksenia_cafe', 'artem_design'
-        ];
-
         // ===== ВЕРИФИКАЦИЯ =====
-        let verifiedUsers = new Set(['cyberphoenix', 'neonwolf', 'BUBLEMERC', 'KacERORga']);
+        let verifiedUsers = new Set(['BUBLEMERC', 'KacERORga']);
 
         // ===== ПОДПИСКИ =====
         let subscriptions = new Set();
@@ -543,119 +559,61 @@
             refreshView();
         }
 
-        // ===== ПОСТЫ ТОЛЬКО ОТ РЕАЛЬНЫХ ПОЛЬЗОВАТЕЛЕЙ =====
-        function generateRealisticPost(index) {
-            const topics = [
-                'фотография', 'путешествие', 'музыка', 'кино', 'книги', 'спорт', 'еда', 'технологии', 'искусство', 'наука',
-                'йога', 'психология', 'бизнес', 'крипта', 'нейросети', 'космос', 'авто', 'фитнес', 'рецепты', 'кафе'
-            ];
-            
-            const templates = [
-                (topic, acc) => `Сегодня снимал ${acc}`,
-                (topic, acc) => `В выходные поеду в ${acc}`,
-                (topic, acc) => `Слушаю новую ${acc}`,
-                (topic, acc) => `Посмотрел отличный ${acc}`,
-                (topic, acc) => `Читаю интересные ${acc}`,
-                (topic, acc) => `Хожу на ${acc} каждый день`,
-                (topic, acc) => `Приготовил вкусную ${acc}`,
-                (topic, acc) => `Купил новые ${acc}`,
-                (topic, acc) => `Рисую ${acc}`,
-                (topic, acc) => `Узнал новое о ${getCorrectForm(topic, 'prep')}`,
-                (topic, acc) => `Занимаюсь ${getCorrectForm(topic, 'ins')} по утрам`,
-                (topic, acc) => `Читаю книги по ${getCorrectForm(topic, 'dat') || topic}`,
-                (topic, acc) => `Разбираюсь в ${getCorrectForm(topic, 'prep')}`,
-                (topic, acc) => `Интересуюсь ${getCorrectForm(topic, 'ins')}`,
-                (topic, acc) => `Тестирую новые ${acc}`,
-                (topic, acc) => `Наблюдаю за ${getCorrectForm(topic, 'ins')}`,
-                (topic, acc) => `Мечтаю о новом ${acc}`,
-                (topic, acc) => `Бегаю по утрам, люблю ${acc}`,
-                (topic, acc) => `Готовлю по новым ${getCorrectForm(topic, 'dat') || topic}`,
-                (topic, acc) => `Хожу в любимое ${acc}`
-            ];
-            
-            const topic = topics[index % topics.length];
-            const accForm = getCorrectForm(topic, 'acc');
-            const template = templates[index % templates.length];
-            
-            return template(topic, accForm) + ' #' + topic;
-        }
-
+        // ===== МАССИВ ПОСТОВ =====
         let posts = [];
         let postsDisplayed = 20;
         let currentView = 'feed';
         let currentProfile = null;
 
-        function generatePosts(count = 300) {
-            const newPosts = [];
-            for (let i = 0; i < count; i++) {
-                // БЕРЁМ ТОЛЬКО ИЗ realUsers (админов тут нет!)
-                const author = realUsers[Math.floor(Math.random() * realUsers.length)];
-                const content = generateRealisticPost(i);
-                
-                const likes = Math.floor(Math.random() * 147) + 3;
-                
-                const comments = [];
-                const commentCount = Math.floor(Math.random() * 5);
-                for (let j = 0; j < commentCount; j++) {
-                    comments.push({
-                        author: realUsers[Math.floor(Math.random() * realUsers.length)],
-                        text: `Круто! 👍`
-                    });
-                }
-
-                const minutes = Math.floor(Math.random() * 120) + 1;
-                const timeText = `${minutes} ${pluralMinutes(minutes)} назад`;
-
-                newPosts.push({
-                    id: i + Date.now(),
-                    author,
-                    content,
-                    likes: likes,
-                    liked: false,
-                    comments,
-                    time: timeText,
-                    likesText: `${likes} ${pluralLikes(likes)}`
-                });
-            }
-            // Перемешиваем
-            for (let i = newPosts.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newPosts[i], newPosts[j]] = [newPosts[j], newPosts[i]];
-            }
-            return newPosts;
-        }
-
-        const topics = [
-            'фотография', 'путешествие', 'музыка', 'кино', 'книги', 'спорт', 'еда', 'технологии', 'искусство', 'наука',
-            'йога', 'психология', 'бизнес', 'крипта', 'нейросети', 'космос', 'авто', 'фитнес', 'рецепты', 'кафе'
-        ];
-        
-        posts = generatePosts(300);
-
-        // ===== АДМИН-ФУНКЦИИ =====
-        function previewGradient(timeOfDay) {
-            document.body.className = timeOfDay;
-        }
-
-        function clearAllPosts() {
-            if (confirm('Удалить все посты?')) {
-                posts = generatePosts(300);
-                refreshView();
-                alert('Сгенерированы новые посты от реальных пользователей!');
+        // ===== ЗАГРУЗКА ПОСТОВ ИЗ LOCALSTORAGE =====
+        function loadPosts() {
+            const saved = localStorage.getItem('posts');
+            if (saved) {
+                posts = JSON.parse(saved);
+            } else {
+                posts = []; // Пустой массив, никаких сгенерированных постов
             }
         }
 
-        // ===== ОСНОВНЫЕ ФУНКЦИИ =====
+        function savePosts() {
+            localStorage.setItem('posts', JSON.stringify(posts));
+        }
+
+        // Загружаем посты при старте
+        loadPosts();
+
+        // ===== ФУНКЦИИ ОТОБРАЖЕНИЯ =====
         function refreshView() {
             if (currentView === 'feed') showFeed();
             else if (currentView === 'subscriptions') showSubscriptions();
             else if (currentView === 'profile') showProfile(currentProfile);
         }
 
+        function showWelcomeMessage() {
+            currentView = 'feed';
+            document.getElementById('feedBtn').classList.add('active');
+            document.getElementById('subscriptionsBtn').classList.remove('active');
+            
+            document.getElementById('dynamicContent').innerHTML = `
+                <div class="welcome-message">
+                    <div class="kolobok-big">🍞</div>
+                    <h2>Добро пожаловать в Kolocrug!</h2>
+                    <p>Пока здесь пусто — будьте первым, кто напишет пост!</p>
+                    <p style="font-size: 1rem;">Напишите что-нибудь в форме выше 👆</p>
+                </div>
+            `;
+        }
+
         function showFeed() {
             currentView = 'feed';
             document.getElementById('feedBtn').classList.add('active');
             document.getElementById('subscriptionsBtn').classList.remove('active');
+            
+            if (posts.length === 0) {
+                showWelcomeMessage();
+                return;
+            }
+            
             renderFeed();
         }
 
@@ -663,13 +621,66 @@
             currentView = 'subscriptions';
             document.getElementById('feedBtn').classList.remove('active');
             document.getElementById('subscriptionsBtn').classList.add('active');
-            renderSubscriptions();
+            
+            const subPosts = posts.filter(p => subscriptions.has(p.author));
+            
+            if (subscriptions.size === 0 || subPosts.length === 0) {
+                document.getElementById('dynamicContent').innerHTML = `
+                    <div style="text-align: center; color: white; padding: 50px; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 60px;">
+                        <h2 style="margin-bottom: 20px;">😢 Нет постов от подписок</h2>
+                        <button class="nav-button" onclick="showFeed()">В ленту</button>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="feed">';
+            subPosts.slice(0, postsDisplayed).forEach(post => {
+                const verified = verifiedUsers.has(post.author) ? '<span class="verified-badge">✓</span>' : '';
+                html += `
+                    <div class="post-card">
+                        <div class="post-header" onclick="showProfile('${post.author}')">
+                            <div class="kolobok-small">🍞</div>
+                            <div>
+                                <div class="post-author">@${post.author} ${verified}</div>
+                                <div class="post-time">${post.time}</div>
+                            </div>
+                        </div>
+                        <div class="post-content">${post.content}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            document.getElementById('dynamicContent').innerHTML = html;
         }
 
         function showProfile(username) {
             currentView = 'profile';
             currentProfile = username;
-            renderProfile();
+            
+            const userPosts = posts.filter(p => p.author === username);
+            
+            let html = `
+                <div class="profile-header">
+                    <div class="profile-avatar">🍞</div>
+                    <div>
+                        <h2>@${username} ${verifiedUsers.has(username) ? '<span class="verified-badge">✓</span>' : ''}</h2>
+                        <p>Постов: ${userPosts.length}</p>
+                    </div>
+                </div>
+                <div class="feed">
+            `;
+
+            if (userPosts.length === 0) {
+                html += `<p style="color: white; text-align: center;">Пока нет постов</p>`;
+            } else {
+                userPosts.slice(0, 10).forEach(post => {
+                    html += `<div class="post-card">${post.content}</div>`;
+                });
+            }
+
+            html += '</div>';
+            document.getElementById('dynamicContent').innerHTML = html;
         }
 
         function renderFeed() {
@@ -705,6 +716,9 @@
                             <span class="comment-button" onclick="toggleComments(${post.id})">
                                 💬 ${commentsText}
                             </span>
+                            <span class="subscribe-button" onclick="toggleSubscribe('${post.author}')">
+                                ${subscriptions.has(post.author) ? '✓ Подписан' : '+ Подписаться'}
+                            </span>
                         </div>
                         <div class="comments-section" id="comments-${post.id}" style="display: none;">
                             ${post.comments.map(c => `
@@ -715,6 +729,10 @@
                                     <div>${c.text}</div>
                                 </div>
                             `).join('')}
+                            <div class="comment-input">
+                                <input type="text" id="comment-input-${post.id}" placeholder="Написать комментарий...">
+                                <button onclick="addComment(${post.id})">Отправить</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -724,8 +742,8 @@
                     </div>
                     <div class="sidebar">
                         <div class="sidebar-card">
-                            <h3>🔥 Активные</h3>
-                            ${realUsers.slice(0, 5).map(u => `
+                            <h3>👥 Активные пользователи</h3>
+                            ${[...new Set(posts.map(p => p.author))].slice(0, 5).map(u => `
                                 <div style="margin: 10px 0; cursor: pointer;" onclick="showProfile('${u}')">
                                     🍞 @${u}
                                 </div>
@@ -733,57 +751,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="load-more">
-                    <button onclick="loadMore()">⬇️ Ещё посты</button>
-                </div>
+                ${posts.length > postsDisplayed ? `
+                    <div class="load-more">
+                        <button onclick="loadMore()">⬇️ Ещё посты</button>
+                    </div>
+                ` : ''}
             `;
 
             document.getElementById('dynamicContent').innerHTML = html;
         }
 
-        function renderSubscriptions() {
-            const subPosts = posts.filter(p => subscriptions.has(p.author));
-            
-            if (subscriptions.size === 0) {
-                document.getElementById('dynamicContent').innerHTML = `
-                    <div style="text-align: center; color: white; padding: 50px;">
-                        <h2>😢 Нет подписок</h2>
-                        <button class="nav-button" onclick="showFeed()">В ленту</button>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '<div class="feed">';
-            subPosts.slice(0, postsDisplayed).forEach(post => {
-                html += `<div class="post-card">@${post.author}: ${post.content}</div>`;
-            });
-            html += '</div>';
-            document.getElementById('dynamicContent').innerHTML = html;
-        }
-
-        function renderProfile() {
-            const userPosts = posts.filter(p => p.author === currentProfile);
-            
-            let html = `
-                <div class="profile-header">
-                    <div class="profile-avatar">🍞</div>
-                    <div>
-                        <h2>@${currentProfile} ${verifiedUsers.has(currentProfile) ? '<span class="verified-badge">✓</span>' : ''}</h2>
-                        <p>Постов: ${userPosts.length}</p>
-                    </div>
-                </div>
-                <div class="feed">
-            `;
-
-            userPosts.slice(0, 10).forEach(post => {
-                html += `<div class="post-card">${post.content}</div>`;
-            });
-
-            html += '</div>';
-            document.getElementById('dynamicContent').innerHTML = html;
-        }
-
+        // ===== ДЕЙСТВИЯ =====
         function toggleLike(postId) {
             const post = posts.find(p => p.id == postId);
             if (post) {
@@ -793,6 +771,7 @@
                     post.likes++;
                 }
                 post.liked = !post.liked;
+                savePosts();
                 refreshView();
             }
         }
@@ -802,29 +781,65 @@
             if (div) div.style.display = div.style.display === 'none' ? 'block' : 'none';
         }
 
+        function addComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            const username = localStorage.getItem('username') || 'anonymous';
+            
+            if (text) {
+                const post = posts.find(p => p.id == postId);
+                post.comments.push({
+                    author: username,
+                    text: text
+                });
+                savePosts();
+                refreshView();
+                input.value = '';
+            }
+        }
+
         function createPost() {
             const content = document.getElementById('postContent').value.trim();
-            const currentUser = localStorage.getItem('username');
+            const username = localStorage.getItem('username');
             
-            if (!content) return;
-            
-            // Админы тоже могут писать посты, если захотят
-            posts.unshift({
+            if (!content) {
+                alert('Напишите что-нибудь!');
+                return;
+            }
+
+            const newPost = {
                 id: Date.now(),
-                author: currentUser,
+                author: username,
                 content: content,
                 likes: 0,
                 liked: false,
                 comments: [],
                 time: 'только что'
-            });
-            refreshView();
+            };
+
+            posts.unshift(newPost);
+            savePosts();
             document.getElementById('postContent').value = '';
+            showFeed();
         }
 
         function loadMore() {
             postsDisplayed += 20;
             refreshView();
+        }
+
+        // ===== АДМИН-ФУНКЦИИ =====
+        function previewGradient(timeOfDay) {
+            document.body.className = timeOfDay;
+        }
+
+        function clearAllPosts() {
+            if (confirm('Удалить все посты? Это действие нельзя отменить.')) {
+                posts = [];
+                postsDisplayed = 20;
+                savePosts();
+                showWelcomeMessage();
+            }
         }
 
         // ===== ВХОД =====
@@ -837,6 +852,7 @@
                 return;
             }
 
+            // Проверка для админов
             if (ADMIN_USERNAMES.includes(username)) {
                 if (password !== ADMIN_PASSWORD) {
                     document.getElementById('loginError').textContent = 'Неверный пароль';
@@ -852,6 +868,7 @@
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('displayUsername').innerHTML = '@' + username + (verifiedUsers.has(username) ? '<span class="verified-badge">✓</span>' : '');
             
+            // Показываем админ-панель только админам
             const adminPanel = document.getElementById('adminPanel');
             if (ADMIN_USERNAMES.includes(username)) {
                 adminPanel.classList.add('visible');
@@ -860,7 +877,12 @@
             }
             
             loadSubscriptions();
-            showFeed();
+            
+            if (posts.length === 0) {
+                showWelcomeMessage();
+            } else {
+                showFeed();
+            }
         }
 
         function logout() {
@@ -897,7 +919,12 @@
                 }
                 
                 loadSubscriptions();
-                showFeed();
+                
+                if (posts.length === 0) {
+                    showWelcomeMessage();
+                } else {
+                    showFeed();
+                }
             }
             
             updateTime();
