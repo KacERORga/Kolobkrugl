@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kolocrug — соцсеть колобков</title>
     <style>
-        /* ===== БАЗОВЫЕ СТИЛИ ===== */
         * {
             margin: 0;
             padding: 0;
@@ -15,11 +14,10 @@
 
         body {
             min-height: 100vh;
-            transition: background 1.5s ease, color 0.3s ease;
+            transition: background 1.5s ease;
             color: #1d1c1f;
         }
 
-        /* Стандартные градиенты */
         body.morning {
             background: radial-gradient(circle at 20% 30%, rgba(200, 220, 255, 0.8) 0%, transparent 40%),
                         radial-gradient(circle at 80% 70%, rgba(180, 210, 255, 0.7) 0%, transparent 40%),
@@ -219,10 +217,10 @@
             padding: 30px;
             margin-bottom: 30px;
             color: white;
-            display: none; /* Скрыта по умолчанию */
+            display: none;
         }
         .admin-panel.visible {
-            display: block; /* Показываем только админам */
+            display: block;
         }
         .admin-panel h3 {
             font-size: 2rem;
@@ -253,30 +251,6 @@
             border-radius: 40px;
             color: white;
             cursor: pointer;
-            transition: 0.3s;
-            font-size: 1rem;
-        }
-        .preview-button:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
-        }
-        .preview-button.active {
-            background: #f1c40f;
-            color: #1a1a1a;
-            border-color: #f1c40f;
-        }
-        .color-input {
-            width: 100%;
-            padding: 10px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 40px;
-            color: white;
-            margin: 10px 0;
-        }
-        .range-slider {
-            width: 100%;
-            margin: 15px 0;
         }
         .admin-button {
             background: #f1c40f;
@@ -459,47 +433,23 @@
                 </div>
             </div>
 
-            <!-- АДМИН-ПАНЕЛЬ - по умолчанию скрыта -->
+            <!-- АДМИН-ПАНЕЛЬ -->
             <div class="admin-panel" id="adminPanel">
                 <h3>⚡ Админ-панель</h3>
                 
-                <!-- РЕЖИМ ПРЕВЬЮ -->
                 <div class="admin-section">
                     <h4>🎨 Режим превью</h4>
-                    
                     <div class="preview-controls">
                         <button class="preview-button" onclick="previewGradient('morning')">🌅 Утро</button>
                         <button class="preview-button" onclick="previewGradient('day')">☀️ День</button>
                         <button class="preview-button" onclick="previewGradient('sunset')">🌇 Закат</button>
                         <button class="preview-button" onclick="previewGradient('night')">🌃 Ночь</button>
                     </div>
-
-                    <div style="margin-top: 20px;">
-                        <h4>🎨 Цвета</h4>
-                        <input type="color" id="primaryColor" class="color-input" value="#1DA1F2" onchange="changeColor('primary', this.value)">
-                        <label>Основной цвет</label>
-                        
-                        <input type="color" id="accentColor" class="color-input" value="#FFD700" onchange="changeColor('accent', this.value)">
-                        <label>Акцентный цвет</label>
-                    </div>
-
-                    <div style="margin-top: 20px;">
-                        <h4>🔄 Прозрачность</h4>
-                        <input type="range" class="range-slider" min="0.1" max="0.9" step="0.1" value="0.15" onchange="changeOpacity(this.value)">
-                        <span id="opacityValue">0.15</span>
-                    </div>
-
-                    <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button class="admin-button" onclick="saveDesign()">💾 Сохранить</button>
-                        <button class="admin-button" onclick="resetDesign()">↺ Сбросить</button>
-                    </div>
                 </div>
 
-                <!-- Другие функции -->
                 <div class="admin-section">
                     <h4>⚙️ Управление</h4>
                     <button class="admin-button" onclick="clearAllPosts()">🗑️ Удалить все посты</button>
-                    <button class="admin-button" onclick="generateNewPosts()">🔄 Новые посты</button>
                 </div>
             </div>
 
@@ -508,6 +458,52 @@
     </div>
 
     <script>
+        // ===== ФУНКЦИЯ ДЛЯ ПРАВИЛЬНЫХ ПАДЕЖЕЙ =====
+        function getCorrectForm(topic, case_type) {
+            const forms = {
+                'фотография': { acc: 'фотографию', ins: 'фотографией', prep: 'фотографии' },
+                'путешествие': { acc: 'путешествие', ins: 'путешествием', prep: 'путешествии' },
+                'музыка': { acc: 'музыку', ins: 'музыкой', prep: 'музыке' },
+                'кино': { acc: 'кино', ins: 'кино', prep: 'кино' },
+                'книги': { acc: 'книги', ins: 'книгами', prep: 'книгах' },
+                'спорт': { acc: 'спорт', ins: 'спортом', prep: 'спорте' },
+                'еда': { acc: 'еду', ins: 'едой', prep: 'еде' },
+                'технологии': { acc: 'технологии', ins: 'технологиями', prep: 'технологиях' },
+                'искусство': { acc: 'искусство', ins: 'искусством', prep: 'искусстве' },
+                'наука': { acc: 'науку', ins: 'наукой', prep: 'науке' },
+                'йога': { acc: 'йогу', ins: 'йогой', prep: 'йоге' },
+                'психология': { acc: 'психологию', ins: 'психологией', prep: 'психологии' },
+                'бизнес': { acc: 'бизнес', ins: 'бизнесом', prep: 'бизнесе' },
+                'крипта': { acc: 'крипту', ins: 'криптой', prep: 'крипте' },
+                'нейросети': { acc: 'нейросети', ins: 'нейросетями', prep: 'нейросетях' },
+                'космос': { acc: 'космос', ins: 'космосом', prep: 'космосе' },
+                'авто': { acc: 'авто', ins: 'авто', prep: 'авто' },
+                'фитнес': { acc: 'фитнес', ins: 'фитнесом', prep: 'фитнесе' },
+                'рецепты': { acc: 'рецепты', ins: 'рецептами', prep: 'рецептах' },
+                'кафе': { acc: 'кафе', ins: 'кафе', prep: 'кафе' }
+            };
+            return forms[topic]?.[case_type] || topic;
+        }
+
+        // ===== ФУНКЦИЯ ДЛЯ ПРАВИЛЬНЫХ ОКОНЧАНИЙ =====
+        function pluralLikes(count) {
+            if (count % 10 === 1 && count % 100 !== 11) return 'лайк';
+            if ([2,3,4].includes(count % 10) && ![12,13,14].includes(count % 100)) return 'лайка';
+            return 'лайков';
+        }
+
+        function pluralComments(count) {
+            if (count % 10 === 1 && count % 100 !== 11) return 'комментарий';
+            if ([2,3,4].includes(count % 10) && ![12,13,14].includes(count % 100)) return 'комментария';
+            return 'комментариев';
+        }
+
+        function pluralMinutes(count) {
+            if (count % 10 === 1 && count % 100 !== 11) return 'минуту';
+            if ([2,3,4].includes(count % 10) && ![12,13,14].includes(count % 100)) return 'минуты';
+            return 'минут';
+        }
+
         // ===== ПОЛИТИКА =====
         function acceptPrivacy() {
             document.getElementById('privacyPopup').classList.add('hidden');
@@ -516,6 +512,14 @@
         // ===== АДМИНЫ (ТОЛЬКО ЭТИ ДВА) =====
         const ADMIN_USERNAMES = ['BUBLEMERC', 'KacERORga'];
         const ADMIN_PASSWORD = '6369';
+
+        // ===== РЕАЛЬНЫЕ ПОЛЬЗОВАТЕЛИ (админов тут НЕТ) =====
+        const realUsers = [
+            'alex_foto', 'misha_travel', 'lena_music', 'dima_kino', 'olga_books', 
+            'anton_sport', 'sveta_food', 'pavel_tech', 'nina_art', 'igor_science',
+            'katya_yoga', 'vova_psy', 'tanya_biz', 'sasha_crypto', 'rita_ai',
+            'danya_space', 'liza_auto', 'maks_fitness', 'ksenia_cafe', 'artem_design'
+        ];
 
         // ===== ВЕРИФИКАЦИЯ =====
         let verifiedUsers = new Set(['cyberphoenix', 'neonwolf', 'BUBLEMERC', 'KacERORga']);
@@ -539,34 +543,41 @@
             refreshView();
         }
 
-        // ===== ГЕНЕРАЦИЯ ПОСТОВ =====
-        const usernames = [
-            'cyberphoenix', 'neonwolf', 'quantum', 'cosmic', 'shadow', 'BUBLEMERC', 'KacERORga',
-            'alice', 'bob', 'charlie', 'dave', 'eve', 'frank', 'grace', 'heidi'
-        ];
-
+        // ===== ПОСТЫ ТОЛЬКО ОТ РЕАЛЬНЫХ ПОЛЬЗОВАТЕЛЕЙ =====
         function generateRealisticPost(index) {
             const topics = [
-                'фотография', 'путешествия', 'музыка', 'кино', 'книги', 'спорт', 'еда', 'технологии', 'искусство', 'наука',
-                'йога', 'психология', 'бизнес', 'крипто', 'AI', 'космос', 'авто', 'фитнес', 'рецепты', 'кафе'
+                'фотография', 'путешествие', 'музыка', 'кино', 'книги', 'спорт', 'еда', 'технологии', 'искусство', 'наука',
+                'йога', 'психология', 'бизнес', 'крипта', 'нейросети', 'космос', 'авто', 'фитнес', 'рецепты', 'кафе'
             ];
             
             const templates = [
-                (t) => `Сегодня отличный день для ${t}!`,
-                (t) => `Новый пост про ${t}, всем советую`,
-                (t) => `Как вам ${t} в 2026?`,
-                (t) => `Люблю ${t}, это моё хобби`,
-                (t) => `Кто тоже увлекается ${t}?`,
-                (t) => `Мой опыт в ${t} за последний месяц`,
-                (t) => `Лучшие книги про ${t}`,
-                (t) => `${t} меняет жизнь к лучшему`,
-                (t) => `Обсудим ${t} в комментариях`,
-                (t) => `Ищу друзей для ${t}`
+                (topic, acc) => `Сегодня снимал ${acc}`,
+                (topic, acc) => `В выходные поеду в ${acc}`,
+                (topic, acc) => `Слушаю новую ${acc}`,
+                (topic, acc) => `Посмотрел отличный ${acc}`,
+                (topic, acc) => `Читаю интересные ${acc}`,
+                (topic, acc) => `Хожу на ${acc} каждый день`,
+                (topic, acc) => `Приготовил вкусную ${acc}`,
+                (topic, acc) => `Купил новые ${acc}`,
+                (topic, acc) => `Рисую ${acc}`,
+                (topic, acc) => `Узнал новое о ${getCorrectForm(topic, 'prep')}`,
+                (topic, acc) => `Занимаюсь ${getCorrectForm(topic, 'ins')} по утрам`,
+                (topic, acc) => `Читаю книги по ${getCorrectForm(topic, 'dat') || topic}`,
+                (topic, acc) => `Разбираюсь в ${getCorrectForm(topic, 'prep')}`,
+                (topic, acc) => `Интересуюсь ${getCorrectForm(topic, 'ins')}`,
+                (topic, acc) => `Тестирую новые ${acc}`,
+                (topic, acc) => `Наблюдаю за ${getCorrectForm(topic, 'ins')}`,
+                (topic, acc) => `Мечтаю о новом ${acc}`,
+                (topic, acc) => `Бегаю по утрам, люблю ${acc}`,
+                (topic, acc) => `Готовлю по новым ${getCorrectForm(topic, 'dat') || topic}`,
+                (topic, acc) => `Хожу в любимое ${acc}`
             ];
             
             const topic = topics[index % topics.length];
+            const accForm = getCorrectForm(topic, 'acc');
             const template = templates[index % templates.length];
-            return template(topic) + ' #' + topic;
+            
+            return template(topic, accForm) + ' #' + topic;
         }
 
         let posts = [];
@@ -574,77 +585,64 @@
         let currentView = 'feed';
         let currentProfile = null;
 
-        function generatePosts(count = 500) {
+        function generatePosts(count = 300) {
             const newPosts = [];
             for (let i = 0; i < count; i++) {
-                const author = usernames[Math.floor(Math.random() * usernames.length)];
+                // БЕРЁМ ТОЛЬКО ИЗ realUsers (админов тут нет!)
+                const author = realUsers[Math.floor(Math.random() * realUsers.length)];
                 const content = generateRealisticPost(i);
                 
+                const likes = Math.floor(Math.random() * 147) + 3;
+                
                 const comments = [];
-                for (let j = 0; j < Math.floor(Math.random() * 4); j++) {
+                const commentCount = Math.floor(Math.random() * 5);
+                for (let j = 0; j < commentCount; j++) {
                     comments.push({
-                        author: usernames[Math.floor(Math.random() * usernames.length)],
-                        text: `Согласен про ${content.split('#')[1] || 'это'}!`
+                        author: realUsers[Math.floor(Math.random() * realUsers.length)],
+                        text: `Круто! 👍`
                     });
                 }
+
+                const minutes = Math.floor(Math.random() * 120) + 1;
+                const timeText = `${minutes} ${pluralMinutes(minutes)} назад`;
 
                 newPosts.push({
                     id: i + Date.now(),
                     author,
                     content,
-                    likes: Math.floor(Math.random() * 200) + 10,
+                    likes: likes,
                     liked: false,
                     comments,
-                    time: Math.floor(Math.random() * 60) + ' мин назад'
+                    time: timeText,
+                    likesText: `${likes} ${pluralLikes(likes)}`
                 });
             }
-            return newPosts.sort(() => Math.random() - 0.5);
+            // Перемешиваем
+            for (let i = newPosts.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newPosts[i], newPosts[j]] = [newPosts[j], newPosts[i]];
+            }
+            return newPosts;
         }
 
-        posts = generatePosts(800);
+        const topics = [
+            'фотография', 'путешествие', 'музыка', 'кино', 'книги', 'спорт', 'еда', 'технологии', 'искусство', 'наука',
+            'йога', 'психология', 'бизнес', 'крипта', 'нейросети', 'космос', 'авто', 'фитнес', 'рецепты', 'кафе'
+        ];
+        
+        posts = generatePosts(300);
 
         // ===== АДМИН-ФУНКЦИИ =====
         function previewGradient(timeOfDay) {
             document.body.className = timeOfDay;
         }
 
-        function changeColor(type, color) {
-            if (type === 'primary') {
-                document.querySelectorAll('.privacy-button.accept, .login-card button').forEach(el => {
-                    el.style.backgroundColor = color;
-                });
-            } else if (type === 'accent') {
-                document.querySelectorAll('.kolobok, .kolobok-small').forEach(el => {
-                    el.style.background = `linear-gradient(145deg, ${color}, ${color})`;
-                });
+        function clearAllPosts() {
+            if (confirm('Удалить все посты?')) {
+                posts = generatePosts(300);
+                refreshView();
+                alert('Сгенерированы новые посты от реальных пользователей!');
             }
-        }
-
-        function changeOpacity(value) {
-            document.getElementById('opacityValue').textContent = value;
-            document.querySelectorAll('.post-card, .sidebar-card, .post-form, .profile-header').forEach(el => {
-                el.style.backgroundColor = `rgba(255, 255, 255, ${value})`;
-            });
-        }
-
-        function saveDesign() {
-            alert('Дизайн сохранён!');
-        }
-
-        function resetDesign() {
-            document.body.className = 'day';
-            document.getElementById('primaryColor').value = '#1DA1F2';
-            document.getElementById('accentColor').value = '#FFD700';
-            document.querySelector('.range-slider').value = '0.15';
-            document.getElementById('opacityValue').textContent = '0.15';
-            changeOpacity('0.15');
-            alert('Дизайн сброшен!');
-        }
-
-        function generateNewPosts() {
-            posts = generatePosts(800);
-            showFeed();
-            alert('Сгенерировано 800 новых постов!');
         }
 
         // ===== ОСНОВНЫЕ ФУНКЦИИ =====
@@ -687,6 +685,9 @@
             posts.slice(0, postsDisplayed).forEach(post => {
                 const verified = verifiedUsers.has(post.author) ? '<span class="verified-badge">✓</span>' : '';
                 
+                const likesText = `${post.likes} ${pluralLikes(post.likes)}`;
+                const commentsText = `${post.comments.length} ${pluralComments(post.comments.length)}`;
+                
                 html += `
                     <div class="post-card">
                         <div class="post-header" onclick="showProfile('${post.author}')">
@@ -699,10 +700,10 @@
                         <div class="post-content">${post.content}</div>
                         <div class="post-stats">
                             <span class="like-button ${post.liked ? 'liked' : ''}" onclick="toggleLike(${post.id})">
-                                ❤️ ${post.likes}
+                                ❤️ ${likesText}
                             </span>
                             <span class="comment-button" onclick="toggleComments(${post.id})">
-                                💬 ${post.comments.length}
+                                💬 ${commentsText}
                             </span>
                         </div>
                         <div class="comments-section" id="comments-${post.id}" style="display: none;">
@@ -724,7 +725,7 @@
                     <div class="sidebar">
                         <div class="sidebar-card">
                             <h3>🔥 Активные</h3>
-                            ${usernames.slice(0, 5).map(u => `
+                            ${realUsers.slice(0, 5).map(u => `
                                 <div style="margin: 10px 0; cursor: pointer;" onclick="showProfile('${u}')">
                                     🍞 @${u}
                                 </div>
@@ -786,8 +787,12 @@
         function toggleLike(postId) {
             const post = posts.find(p => p.id == postId);
             if (post) {
+                if (post.liked) {
+                    post.likes--;
+                } else {
+                    post.likes++;
+                }
                 post.liked = !post.liked;
-                post.likes += post.liked ? 1 : -1;
                 refreshView();
             }
         }
@@ -799,18 +804,22 @@
 
         function createPost() {
             const content = document.getElementById('postContent').value.trim();
-            if (content) {
-                posts.unshift({
-                    id: Date.now(),
-                    author: localStorage.getItem('username'),
-                    content: content,
-                    likes: 0,
-                    liked: false,
-                    comments: [],
-                    time: 'только что'
-                });
-                refreshView();
-            }
+            const currentUser = localStorage.getItem('username');
+            
+            if (!content) return;
+            
+            // Админы тоже могут писать посты, если захотят
+            posts.unshift({
+                id: Date.now(),
+                author: currentUser,
+                content: content,
+                likes: 0,
+                liked: false,
+                comments: [],
+                time: 'только что'
+            });
+            refreshView();
+            document.getElementById('postContent').value = '';
         }
 
         function loadMore() {
@@ -818,14 +827,7 @@
             refreshView();
         }
 
-        function clearAllPosts() {
-            if (confirm('Удалить все посты?')) {
-                posts = [];
-                refreshView();
-            }
-        }
-
-        // ===== ВХОД (ИСПРАВЛЕНО - админка только для двоих) =====
+        // ===== ВХОД =====
         function handleLogin() {
             const username = document.getElementById('usernameInput').value.trim();
             const password = document.getElementById('passwordInput').value.trim();
@@ -835,16 +837,13 @@
                 return;
             }
 
-            // Проверка для админов
             if (ADMIN_USERNAMES.includes(username)) {
                 if (password !== ADMIN_PASSWORD) {
                     document.getElementById('loginError').textContent = 'Неверный пароль';
                     return;
                 }
-                // Админ прошёл проверку
                 localStorage.setItem('isAdmin', 'true');
             } else {
-                // Обычный пользователь - пароль не проверяем (можно оставить пустым)
                 localStorage.setItem('isAdmin', 'false');
             }
 
@@ -853,14 +852,11 @@
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('displayUsername').innerHTML = '@' + username + (verifiedUsers.has(username) ? '<span class="verified-badge">✓</span>' : '');
             
-            // ПОКАЗЫВАЕМ АДМИНКУ ТОЛЬКО ДЛЯ BUBLEMERC И KacERORga
             const adminPanel = document.getElementById('adminPanel');
             if (ADMIN_USERNAMES.includes(username)) {
-                adminPanel.classList.add('visible');  // Показываем админку
-                console.log('Админка показана для', username);
+                adminPanel.classList.add('visible');
             } else {
-                adminPanel.classList.remove('visible'); // Скрываем для всех остальных
-                console.log('Админка скрыта для', username);
+                adminPanel.classList.remove('visible');
             }
             
             loadSubscriptions();
@@ -872,7 +868,7 @@
             localStorage.removeItem('isAdmin');
             document.getElementById('loginModal').style.display = 'flex';
             document.getElementById('mainContent').style.display = 'none';
-            document.getElementById('adminPanel').classList.remove('visible'); // Скрываем админку при выходе
+            document.getElementById('adminPanel').classList.remove('visible');
         }
 
         // ===== ВРЕМЯ =====
@@ -895,7 +891,6 @@
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('displayUsername').textContent = '@' + localStorage.getItem('username');
                 
-                // Проверяем при загрузке - показываем админку только админам
                 const username = localStorage.getItem('username');
                 if (ADMIN_USERNAMES.includes(username)) {
                     document.getElementById('adminPanel').classList.add('visible');
